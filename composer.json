@@ -1,0 +1,8 @@
+{
+	"name": "MacroMan/dpd-local-client",
+	"autoload": {
+		"psr-4": {
+			"MacroMan\\": "src/"
+		}
+	}
+}
