@@ -30,11 +30,11 @@ class Contact extends Client {
 
 	/**
 	 * Physical address for the DPD Local driver
-	 * @var DpdLocalAddress
+	 * @var Address
 	 */
 	private $address;
 
-	public static function create(DpdLocalAddress $address, string $name, string $phoneNumber, string $emailAddress = '', string $mobileNumber = '') {
+	public static function create($address, string $name, string $phoneNumber, string $emailAddress = '', string $mobileNumber = '') {
 		$self = new self();
 		$self->address = $address;
 		$self->name = $name;
@@ -60,17 +60,23 @@ class Contact extends Client {
 	 * @return array
 	 */
 	public function toArray() {
-		return array(
+		$ret = array(
 			"contactDetails" => array(
-				"contactName" => $this->name,
-				"telephone" => $this->phoneNumber,
+				"contactName" => Client::clean($this->name),
+				"telephone" => Client::clean($this->phoneNumber),
 			),
 			"address" => $this->address->toArray(),
-			'notificationDetails' => array(
-				"email" => $this->emailAddress,
-				"mobile" => $this->mobileNumber,
-			),
 		);
+		if ($this->emailAddress || $this->mobileNumber) {
+			$ret['notificationDetails'] = array();
+		}
+		if ($this->emailAddress) {
+			$ret['notificationDetails']['email'] = Client::clean($this->emailAddress);
+		}
+		if ($this->mobileNumber) {
+			$ret['notificationDetails']['mobile'] = Client::clean($this->mobileNumber);
+		}
+		return $ret;
 	}
 
 }

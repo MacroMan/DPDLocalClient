@@ -41,13 +41,13 @@ class Service extends Client {
 	 * Code represeting this product/service combo
 	 * @var string
 	 */
-	private $networkCode;
+	protected $networkCode;
 
 	/**
 	 * Human readable string representing this product/service combo
 	 * @var string
 	 */
-	private $networkDescription;
+	protected $networkDescription;
 
 	/**
 	 * Code representing the product eg. ExPak1, ExPak5, Parcel, etc
@@ -87,22 +87,26 @@ class Service extends Client {
 
 	/**
 	 * Get a list of services for the given consignment information
-	 * @param int $direction
+	 * @param int $direction (1 for outbound, 2 for inbound)
 	 * @param int $NoOfParcels
 	 * @param int $weight
-	 * @param int $type
-	 * @param DpdLocalAddress $collectionAddress
-	 * @param DpdLocalAddress $deliveryAddress
+	 * @param int $type (0 for standard, 1 for collection on delivery, 2 for swapit)
+	 * @param Address $collectionAddress
+	 * @param Address $deliveryAddress
 	 * @return array Encapsulation of DpdLocalService's
 	 */
-	public static function loadByAddress(int $direction, int $NoOfParcels, int $weight, int $type, DpdLocalAddress $collectionAddress, DpdLocalAddress $deliveryAddress) {
+	public static function loadByAddress(int $direction, int $NoOfParcels, int $weight, int $type, $collectionAddress, $deliveryAddress) {
 		$data = array(
 			'deliveryDirection' => $direction,
 			'numberOfParcels' => $NoOfParcels,
 			'totalWeight' => $weight,
 			'shipmentType' => $type,
-			'collectionDetails' => $collectionAddress->toArray(),
-			'deliveryDetails' => $deliveryAddress->toArray(),
+			'collectionDetails' => array(
+				'address' => $collectionAddress->toArray(),
+			),
+			'deliveryDetails' => array(
+				'address' => $deliveryAddress->toArray(),
+			),
 		);
 
 		$self = new self();
@@ -116,6 +120,9 @@ class Service extends Client {
 		$dataStr = str_replace(array('%5B', '%5D'), array('.', ''), $queryStr);
 		$reqStr = "/shipping/network/?" . $dataStr;
 		$response = $self->query($reqStr);
+		if ($self->error) {
+			return $self->error;
+		}
 		return self::getObjects($response);
 	}
 

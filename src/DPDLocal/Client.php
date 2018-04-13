@@ -31,7 +31,7 @@ class Client {
 	 * The cURL timeout value in seconds (as a string)
 	 * @var string (number)
 	 */
-	private $timeout = "5";
+	private $timeout = "30";
 
 	/**
 	 * The useragent header to send the DPD Local API
@@ -79,6 +79,12 @@ class Client {
 	private $httpErrorCodes = array(
 		401, 403, 404, 500, 503
 	);
+
+	/**
+	 * Holds an error message, if one is present
+	 * @var string Human readable error string
+	 */
+	protected $error;
 
 	/**
 	 * Header stating what type of data we are sending to the DPD Local API
@@ -130,8 +136,6 @@ class Client {
 		if (!$this->curl) {
 			$this->init();
 		}
-		echo "Stack trace:\n";
-		debug_print_backtrace();
 		$headers = array_merge(array(
 			"Content-Type" => $this->contentType,
 			"Accept" => $this->returnFormat,
@@ -152,8 +156,11 @@ class Client {
 			$headers["Content-Length"] = $length;
 		}
 		$this->setCurlOptions($method, $action, $headers, $payload);
+		//$log = "$payload\n";
+		//file_put_contents("/tmp/dpd_signoff.log", $log, FILE_APPEND);
 
 		$exec = curl_exec($this->curl);
+		//file_put_contents("/tmp/dpd.log", var_export($exec, true) . "\n", FILE_APPEND);
 		$httpCode = curl_getinfo($this->curl, CURLINFO_HTTP_CODE);
 		if ($decodeOutput) {
 			$data = json_decode($exec, true);
@@ -167,12 +174,14 @@ class Client {
 			$this->httpError($httpCode);
 		} elseif (!$decodeOutput) {
 			return $data;
+		} elseif (isset($data['data']) && empty($data['data']) == false) {
+			return $data['data'];
 		} elseif (isset($data['error']) && empty($data['error']) == false) {
-			$this->responseError($data['error']);
+			return $this->responseError($data['error']);
 		} elseif (isset($data['data']) == false || empty($data['data'])) {
 			throw new Exception('Empty dataset returned from DPD Local API');
 		} else {
-			return $data['data'];
+			throw new Exception('Unkown error');
 		}
 	}
 
@@ -230,7 +239,13 @@ class Client {
 	 */
 	private function responseError(array $error) {
 		$err = (isset($error[0])) ? $error[0] : $error;
-		throw new Exception('Code: ' . $err['errorCode'] . ' Type: ' . $err['errorType'] . ' Message: ' . $err['obj'] . ' / ' . $err['errorMessage']);
+		$code = $err['errorCode'];
+		$type = $err['errorType'];
+		$message = $err['errorMessage'];
+		$obj = $err['obj'];
+		$error = "$type error! Code: $code $message. Obj: $obj";
+		$this->error = $error;
+		return false;
 	}
 
 	/**
@@ -259,6 +274,15 @@ class Client {
 		}
 
 		return parent::__get($name);
+	}
+
+	/**
+	 * Returns a cleaned string free from any linebreaks
+	 * @param string $string
+	 * @return string Clean string
+	 */
+	public static function clean(string $string) {
+		return str_replace(array("\n", "\r"), ", ", $string);
 	}
 
 }

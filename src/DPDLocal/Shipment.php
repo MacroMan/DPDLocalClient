@@ -69,12 +69,12 @@ class Shipment extends Client {
 
 	/**
 	 * Helper function to create new object in one function call
-	 * @param DpdLocalConsignment $consignment
+	 * @param Consignment $consignment
 	 * @param DateTime $collectionDate
 	 * @param bool $consolodate
 	 * @return \DpdLocalShipment
 	 */
-	public static function create(DpdLocalConsignment $consignment, DateTime $collectionDate, bool $consolodate = false) {
+	public static function create($consignment, \DateTime $collectionDate, bool $consolodate = false) {
 		$self = new self();
 		$self->collectionDate = $collectionDate;
 		$self->consolidate = $consolodate;
@@ -103,6 +103,9 @@ class Shipment extends Client {
 	 */
 	public function send() {
 		$data = $this->query('/shipping/shipment', array(), json_encode($this->toArray()));
+		if (!$data) {
+			throw new \Exception($this->error);
+		}
 		$this->shipmentId = $data['shipmentId'];
 		$this->consolidated = $data['consolidated'];
 		$this->consignment->setNumber($data['consignmentDetail'][0]['consignmentNumber']);
@@ -115,7 +118,7 @@ class Shipment extends Client {
 			$shipmentId = $this->shipmentId;
 		}
 		if (!$shipmentId) {
-			throw new Exception("No shipmentId provided to getLabels");
+			throw new \Exception("No shipmentId provided to getLabels");
 		}
 
 		return $this->query("/shipping/shipment/$shipmentId/label/", array("Accept" => "text/vnd.citizen-clp"), null, false);

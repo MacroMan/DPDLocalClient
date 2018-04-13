@@ -109,8 +109,8 @@ class Consignment extends Client {
 
 	/**
 	 * Helper function to create new object in one function call
-	 * @param DpdLocalContact $collectionDetails
-	 * @param DpdLocalContact $deliveryDetails
+	 * @param Contact $collectionDetails
+	 * @param Contact $deliveryDetails
 	 * @param string $networkCode
 	 * @param int $numberOfParcels
 	 * @param int $weight
@@ -124,7 +124,7 @@ class Consignment extends Client {
 	 * @param float $liabilityValue
 	 * @return \DpdLocalConsignment
 	 */
-	public static function create(DpdLocalContact $collectionDetails, DpdLocalContact $deliveryDetails, string $networkCode, int $numberOfParcels, int $weight, string $instructions = '', string $ref1 = '', string $ref2 = '', string $ref3 = '', string $parcelDescripton = '', float $value = null, bool $liability = false, float $liabilityValue = null) {
+	public static function create($collectionDetails, $deliveryDetails, string $networkCode, int $numberOfParcels, int $weight, string $instructions = '', string $ref1 = '', string $ref2 = '', string $ref3 = '', string $parcelDescripton = '', float $value = null, bool $liability = false, float $liabilityValue = null) {
 		$self = new self();
 		$self->collectionDetails = $collectionDetails;
 		$self->deliveryDetails = $deliveryDetails;
@@ -149,19 +149,19 @@ class Consignment extends Client {
 	public function toArray() {
 		return array(
 			'consignmentNumber' => $this->number,
-			'consignmentRef' => $this->ref,
+			'consignmentRef' => Client::clean($this->ref),
 			'parcels' => $this->parcels,
 			'collectionDetails' => $this->collectionDetails->toArray(),
 			'deliveryDetails' => $this->deliveryDetails->toArray(),
 			'networkCode' => $this->networkCode,
 			'numberOfParcels' => $this->numberOfParcels,
 			'totalWeight' => $this->weight,
-			'shippingRef1' => $this->shippingRef1,
-			'shippingRef2' => $this->shippingRef2,
-			'shippingref3' => $this->shippingRef3,
-			'customsValue' => $this->customsValue,
-			'deliveryInstructions' => $this->deliveryInstructions,
-			'parcelDescription' => $this->parcelDescription,
+			'shippingRef1' => Client::clean($this->shippingRef1),
+			'shippingRef2' => Client::clean($this->shippingRef2),
+			'shippingref3' => Client::clean($this->shippingRef3),
+			'customsValue' => Client::clean($this->customsValue),
+			'deliveryInstructions' => Client::clean($this->deliveryInstructions),
+			'parcelDescription' => Client::clean($this->parcelDescription),
 			'liabilityValue' => $this->liabilityValue,
 			'liability' => $this->liability,
 		);

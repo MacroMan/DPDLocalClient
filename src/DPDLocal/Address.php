@@ -62,12 +62,6 @@ class Address extends Client {
 	public $postcode;
 
 	/**
-	 * Human readbale country name eg. "United Kingdom"
-	 * @var string
-	 */
-	public $countryName;
-
-	/**
 	 * ISO 2 digit country code eg. GB
 	 * @var string
 	 */
@@ -82,20 +76,18 @@ class Address extends Client {
 	 * @param string $town
 	 * @param string $county
 	 * @param string $postcode
-	 * @param string $countryName
 	 * @param string $countryCode
 	 * @return \DpdLocalAddress
 	 */
-	public static function create(string $organisaton, string $property, string $street, string $locality, string $town, string $county, string $postcode, string $countryName, string $countryCode) {
+	public static function create(string $organisaton, string $property, string $street, string $locality, string $town, string $county, string $postcode, string $countryCode) {
 		$self = new self();
-		$self->organisation = $organisaton;
-		$self->property = $property;
-		$self->street = $street;
-		$self->locality = $locality;
-		$self->town = $town;
-		$self->county = $county;
+		$self->organisation = substr($organisaton, 0, 35);
+		$self->property = substr($property, 0, 35);
+		$self->street = substr($street, 0, 35);
+		$self->locality = substr($locality, 0, 35);
+		$self->town = substr($town, 0, 35);
+		$self->county = substr($county, 0, 35);
 		$self->postcode = $postcode;
-		$self->countryName = $countryName;
 		$self->countryCode = $countryCode;
 		return $self;
 	}
@@ -109,7 +101,7 @@ class Address extends Client {
 
 		foreach ($this as $key => $val) {
 			if ($val && is_string($val)) {
-				$ret[$key] = $val;
+				$ret[$key] = Client::clean($val);
 			}
 		}
 
