@@ -281,8 +281,11 @@ class Client {
 	 * @param string $string
 	 * @return string Clean string
 	 */
-	public static function clean(string $string) {
-		return str_replace(array("\n", "\r"), ", ", $string);
+	public static function clean($string) {
+		if (is_string($string)) {
+			return str_replace(array("\n", "\r"), ", ", $string);
+		}
+		return $string;
 	}
 
 }
